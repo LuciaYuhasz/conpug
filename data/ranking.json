@@ -1,0 +1,10 @@
+[
+  {
+    "player": "aaa",
+    "score": 5,
+    "correct": 1,
+    "incorrect": 2,
+    "totalTime": 5.296,
+    "avgTimePerQuestion": "1.059"
+  }
+]

@@ -1,0 +1,68 @@
+extends layout
+block head
+  script(src="/game.js" defer)
+block content
+    .text-center.mt-3#musicControl(style="display: none;")
+      button#toggleMusicButton.btn.btn-secondary
+        i.bi.bi-volume-up
+        |  Silenciar Música
+
+    .container.d-flex.flex-column.justify-content-center.align-items-center.min-vh-100
+
+      // Pantalla de registro
+      //errores
+      #errorContainer.alert.alert-danger.text-center.mt-3(role="alert" style="display: none;")
+
+      #registerForm.card-glass.p-4.text-center.w-100(style="max-width: 500px;")
+        h2.mb-3.titulo-claro
+         |¡
+         span.highlight Bienvenido
+         |  
+         span.highlight-blue explorador
+         | !
+
+        p.intro-text ¿Estás listo para comenzar este reto?
+        input#username.form-control.mb-3(type="text" placeholder="Escribe tu nombre acá" required)
+        button#startGameButton.btn.btn-success.w-100
+          | Challenge accepted!
+          i.bi.bi-rocket-takeoff-fill.ms-2
+
+        button#viewRankingButton.btn.btn-warning.w-100.mt-3
+          | 🏅 Ver el ranking
+          i.bi.bi-bar-chart-fill.ms-2
+
+      // Área del juego
+      #gameArea.card-glass.p-4.mt-4.w-100.text-center(style="max-width: 600px; display: none;")
+        .progress.mb-3
+          #progressBar.progress-bar.progress-bar-striped.progress-bar-animated(style="width: 0%")
+        #questionText.fs-4.mb-3
+        ul#optionsList.list-group
+
+
+          // Contenedor de pista con bandera
+      #hintContainer.mt-3(style="display: none;")
+        button#showFlagHintButton.btn.btn-info.mb-2 Ayudita con la bandera del Pais💡
+      #flagHint
+
+
+      // Modal para el resultado de cada pregunta
+      #questionResultModal.modal
+        .modal-content
+          p#modalMessageQuestion.fs-5.fw-bold
+          button#closeQuestionModalButton.btn.btn-primary.mt-3 Continuar
+
+      // Modal para el resultado final del juego
+      #gameResultModal.modal
+        .modal-content
+          h3.fw-bold 🌟 FINALIZASTE! 🌟 
+          p#modalMessage
+          p#modalDetails
+          p#modalRanking
+          p#rankingMessage.text-success.text-center.mt-3(style="display: none; font-size: 1.2rem;")
+          button#viewRankingButtonFinal.btn.btn-warning.mt-3 📊 Ir al ranking
+          button#closeResultModalButton.btn.btn-primary.mt-3 🔁 Volver a jugar!
+
+
+
+
+
