@@ -6,7 +6,7 @@ const { getRankingPage } = require('./rankingController');
 
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+//const PORT = process.env.PORT || 3000;
 
 
 // Configuracion motor de plantillas Pug
@@ -30,9 +30,18 @@ app.get('/', (req, res) => {
 });
 
 app.get('/ranking', getRankingPage);
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+    });
+}
 
+module.exports = app;
+
+//module.exports = app;
 // Iniciar servidor
-app.listen(PORT, () => console.log(`Servidor ejecutándose en http://localhost:${PORT}`));
+//app.listen(PORT, () => console.log(`Servidor ejecutándose en http://localhost:${PORT}`));
 
 
 
@@ -53,3 +62,8 @@ app.listen(PORT, () => console.log(`Servidor ejecutándose en http://localhost:$
 
 // netstat -ano | findstr :3001
 // taskkill /PID 8852 /F
+
+///      netstat -ano | findstr :3000
+////     taskkill /PID 8076 /F
+
+//netlify

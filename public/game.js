@@ -1,4 +1,3 @@
-//public/index.html
 
 // Definición de sonidos para efectos de juego
 const keypressSound = new Audio('sounds/tipeo.mp3');
@@ -39,21 +38,10 @@ usernameInput.addEventListener('input', () => {
     keypressSound.currentTime = 0;
     keypressSound.play();
 });
-// funciones 
 
+//FUNCION DE COMIENZO/REINICIO PARTIDO 
 function startGame() {
-    // Al inicio del juego, verificar si ya existe el nombre en localStorage
-    if (!localStorage.getItem('playerName')) {
-        // Si no existe, pedir el nombre
-        const playerName = prompt("Por favor, ingresa tu nombre:");
-        localStorage.setItem('playerName', playerName);
-    } else {
-        // Si ya existe, usar el nombre guardado
-        const playerName = localStorage.getItem('playerName');
-    }
-
-    console.log("startGame() ejecutado"); // Verifica que la función se está llamando
-
+    console.log("startGame() ejecutado");
 
     buttonClickSound.pause();
     buttonClickSound.currentTime = 0;
@@ -102,43 +90,6 @@ function startGame() {
     });
 }
 
-// Enviar resultados al servidor y mostrar si superó su puntaje
-async function enviarPuntajeFinal() {
-    const totalTime = (Date.now() - startTime) / 1000;
-    const avgTimePerQuestion = totalTime / (correct + incorrect);
-
-    try {
-        const response = await fetch('/api/submit-score', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username,
-                score,
-                correct,
-                incorrect,
-                totalTime,
-                avgTimePerQuestion
-            })
-        });
-
-        const result = await response.json();
-
-        // MOSTRAR mensaje personalizado según el resultado
-        const messageElement = document.getElementById('rankingMessage');
-        if (result.included) {
-            messageElement.innerHTML = result.message === "Puntaje actualizado"
-                ? "🎉 ¡Has superado tu puntaje anterior!"
-                : "✅ Puntaje guardado en el ranking.";
-        } else {
-            messageElement.innerHTML = "👀 No lograste entrar al top 20. ¡Intenta de nuevo!";
-        }
-        messageElement.style.display = 'block';
-
-    } catch (error) {
-        console.error("❌ Error al enviar el puntaje:", error);
-    }
-}
-
 
 // Asignacion la función 'startGame' al botón de inicio
 startGameButton.addEventListener('click', startGame);
@@ -168,27 +119,36 @@ toggleMusicButton.addEventListener('click', () => {
     localStorage.setItem('isMusicMuted', isMusicMuted);
 });
 
-// Función asincrónica para cargar datos de países la API
+// FUNCION ASINCRONA PARA CARGAR PAISES EN LA API 
 async function loadCountries() {
+    const errorContainer = document.getElementById('errorContainer');
+    errorContainer.style.display = 'none'; // Oculta errores anteriores
+    errorContainer.textContent = '';
     try {
         const response = await fetch('https://restcountries.com/v3.1/all');
+        // Validar estado de respuesta HTTP
+        if (!response.ok) {
+            throw new Error(`Error al obtener países: ${response.status} ${response.statusText}`);
+        }
         countries = await response.json();
     } catch (error) {
-        alert("No se pudieron cargar los países.");
+
         console.error(error);
+        errorContainer.textContent = `⚠️ ${error.message}`;
+        errorContainer.style.display = 'block'; // Muestra el error en pantalla
     }
 }
 
 // Función para actualizar la barra de progreso del juego
 function updateProgressBar() {
-    const progress = (currentQuestionIndex / 3) * 100;
+    const progress = (currentQuestionIndex / 10) * 100;
     document.getElementById("progressBar").style.width = `${progress}%`;// se  ajusta el ancho segun el valor de progrees, que representa el porsentaje 
 }
 
 
 // Función para generar y mostrar una pregunta aleatoria
 function generateQuestion() {
-    if (currentQuestionIndex >= 3) {
+    if (currentQuestionIndex >= 10) {
         return endGame(); // Finaliza juego si se mostraron todas las preguntas
     }
 
@@ -210,7 +170,7 @@ function generateQuestion() {
     switch (type) {
         case 'capital':
             if (!country.capital) return generateQuestion(); // Evitar preguntas sin capital definida
-            question = `¿${country.capital[0]} , es la capital de qué país??`;
+            question = `¿${country.capital[0]} , es la capital de qué país?`;
             //correctAnswer = country.name.common;
             correctAnswer = country.translations?.spa?.common || country.name.common;
 
@@ -253,7 +213,7 @@ function displayQuestion({ question, options, correctAnswer, type, flag }) {
 
     // Ocultar pista por defecto
     hintContainer.style.display = 'none';
-    flagHint.innerHTML = '';
+    //flagHint.innerHTML = '';
     showFlagHintButton.style.display = 'inline-block'; // Asegura que vuelva a aparecer el botón
 
 
@@ -262,8 +222,8 @@ function displayQuestion({ question, options, correctAnswer, type, flag }) {
         hintContainer.style.display = 'block';
 
         showFlagHintButton.onclick = () => {
-            flagHint.innerHTML = `<img src="${flag}" alt="Bandera del país" class="flag-question-img">`;
-            showFlagHintButton.style.display = 'none'; // Ocultar botón tras usar pista
+            questionText.innerHTML = `<img src="${flag}" alt="Bandera del país" class="flag-question-img"><br>${question}`;
+            showFlagHintButton.style.display = 'none';
         };
     }
 
@@ -349,7 +309,25 @@ function generateNumericOptions(correctAnswer) {
 
 function endGame() {
     const totalTime = (Date.now() - startTime) / 1000; // Calcula el tiempo total jugado
-    const avgTimePerQuestion = (totalTime / 5).toFixed(3); // Calcula el tiempo promedio por pregunta
+    const avgTimePerQuestion = (totalTime / 10).toFixed(3); // Calcula el tiempo promedio por pregunta
+
+    // Verificar y actualizar récord
+    const previousHighScore = localStorage.getItem(`highScore_${username}`);
+    const currentScore = score;
+
+
+
+    let recordMessage = "";
+
+    if (previousHighScore !== null && currentScore > Number(previousHighScore)) {
+        localStorage.setItem(`highScore_${username}`, currentScore);
+        recordMessage = `🎉 <strong>¡Nuevo récord, ${username}!</strong> Tu nuevo puntaje es <strong>${currentScore}</strong>.`;
+    } else if (previousHighScore === null) {
+        localStorage.setItem(`highScore_${username}`, currentScore);
+        recordMessage = `🎯 <strong>Primer intento, ${username}!</strong> Este es tu puntaje: <strong>${currentScore}</strong>.`;
+    } else {
+        recordMessage = `✅ Tu puntaje fue <strong>${currentScore}</strong>. Tu récord actual es <strong>${previousHighScore}</strong>.`;
+    }
 
     fetch('/api/submit-score', {
         method: 'POST',
