@@ -14,5 +14,13 @@
     "incorrect": 2,
     "totalTime": 5.088,
     "avgTimePerQuestion": "1.696"
+  },
+  {
+    "player": "ttt",
+    "score": 3,
+    "correct": 1,
+    "incorrect": 2,
+    "totalTime": 5.568,
+    "avgTimePerQuestion": "1.856"
   }
 ]
