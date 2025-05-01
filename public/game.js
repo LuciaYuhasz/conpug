@@ -152,14 +152,14 @@ async function loadCountries() {
 
 // Función para actualizar la barra de progreso del juego
 function updateProgressBar() {
-    const progress = (currentQuestionIndex / 10) * 100;
+    const progress = (currentQuestionIndex / 3) * 100;
     document.getElementById("progressBar").style.width = `${progress}%`;// se  ajusta el ancho segun el valor de progrees, que representa el porsentaje 
 }
 
 
 // Función para generar y mostrar una pregunta aleatoria
 function generateQuestion() {
-    if (currentQuestionIndex >= 10) {
+    if (currentQuestionIndex >= 3) {
         return endGame(); // Finaliza juego si se mostraron todas las preguntas
     }
 
@@ -321,7 +321,7 @@ function generateNumericOptions(correctAnswer) {
 function endGame() {
     clearInterval(gameTimerInterval); // Detener el cronómetro 
     const totalTime = (Date.now() - startTime) / 1000; // Calcula el tiempo total jugado
-    const avgTimePerQuestion = (totalTime / 10).toFixed(3); // Calcula el tiempo promedio por pregunta
+    const avgTimePerQuestion = (totalTime / 3).toFixed(3); // Calcula el tiempo promedio por pregunta
 
     // Verificar y actualizar récord
     const previousHighScore = localStorage.getItem(`highScore_${username}`);
