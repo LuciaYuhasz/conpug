@@ -1,23 +1,21 @@
 extends layout
 
 block content
-     #rankingContainer
-      h2 🏆 Ranking de los mejores jugadores
-      p#loadingMessage Cargando ranking...
-      ol#rankingList
-      .d-flex.justify-content-center.gap-3.mt-4
-        button#exitGameButton.btn.btn-danger.btn-lg.px-4.py-2.mt-3.shadow
-          i.bi.bi-door-closed.me-2
-          | Salir del juego
-        button#backToGameButton.btn.btn-primary.btn-lg.px-4.py-2.mt-3.shadow
-          i.bi.bi-arrow-counterclockwise.me-2
-          | Volver a jugar
-       
+  #rankingContainer
+    h2 🏆 Ranking de los mejores jugadores
+    p#loadingMessage Cargando ranking...
+    ol#rankingList
+    .d-flex.justify-content-center.gap-3.mt-4
+      button#exitGameButton.btn.btn-danger.btn-lg.px-4.py-2.mt-3.shadow
+        i.bi.bi-door-closed.me-2
+        | Salir del juego
+      button#backToGameButton.btn.btn-primary.btn-lg.px-4.py-2.mt-3.shadow
+        i.bi.bi-arrow-counterclockwise.me-2
+        | Volver a jugar
 
-block scripts 
-    script.
-      async function fetchRanking() {
-
+block scripts
+  script.
+    async function fetchRanking() {
       try {
         // Mostrar mensaje de carga
         document.getElementById('loadingMessage').style.display = 'block';
@@ -26,41 +24,42 @@ block scripts
         let rankingData = JSON.parse(localStorage.getItem('ranking')) || [];
 
         // Si no hay ranking guardado, hacer la petición al backend
-          if (rankingData.length === 0) { 
-            const response = await fetch('/api/ranking');
-            //if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}. Response: ${await response.text()}`);
-            rankingData = await response.json();
-            localStorage.setItem('ranking', JSON.stringify(rankingData)); // Guardar en cache
-          }
+        if (rankingData.length === 0) {
+          const response = await fetch('/api/ranking');
+          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}. Response: ${await response.text()}`);
+          rankingData = await response.json();
+          localStorage.setItem('ranking', JSON.stringify(rankingData)); // Guardar en cache
+        }
 
-          // Ocultar mensaje de carga con un pequeño retraso para suavizar la experiencia
-          setTimeout(() => document.getElementById('loadingMessage').style.display = 'none', 500);
+        // Ocultar mensaje de carga con un pequeño retraso para suavizar la experiencia
+        setTimeout(() => document.getElementById('loadingMessage').style.display = 'none', 500);
 
-          // Actualizar lista en el DOM
-          const rankingList = document.getElementById('rankingList');
-          rankingList.innerHTML = rankingData.map((player, index) => {
-            let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
-            return `<li><strong>${index + 1}.</strong> ${medal} ${player.player} - ${player.score} pts</li>`;
-          }).join('');
+        // Actualizar lista en el DOM
+        const rankingList = document.getElementById('rankingList');
+        rankingList.innerHTML = rankingData.map((player, index) => {
+          let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
+          return `<li><strong>${index + 1}.</strong> ${medal} ${player.player} - ${player.score} pts</li>`;
+        }).join('');
 
-        } catch (error) {
-          console.error("❌ Error al obtener el ranking:", error);
-          document.getElementById('loadingMessage').textContent = "⚠️ Error al cargar el ranking.";
-        } 
+      } catch (error) {
+        console.error("❌ Error al obtener el ranking:", error);
+        document.getElementById('loadingMessage').textContent = "⚠️ Error al cargar el ranking.";
       }
+    }
 
-      // Ejecutar función al cargar la página
-      fetchRanking();
-      // Botón para volver a jugar
-      document.getElementById('backToGameButton').onclick = () => {
-        window.location.href = "/";
-      };
-      // Botón para salir del juego
-      document.getElementById('exitGameButton').onclick = () => {
-        document.body.innerHTML = `
-          <div class="exit-message">
-            <h2 class="exit-title"> ¡HASTA PRONTO EXPLORADOR!! ✈️</h2>           
-          </div>
-        `;
-      };
+    // Ejecutar función al cargar la página
+    fetchRanking();
+
+    // Botón para volver a jugar
+    document.getElementById('backToGameButton').onclick = () => {
+      window.location.href = "/"; // Redirige al juego
+    };
+
+    // Botón para salir del juego
+    document.getElementById('exitGameButton').onclick = () => {
+      document.body.innerHTML = `
+        <div class="exit-message">
+          <h2 class="exit-title"> ¡HASTA PRONTO EXPLORADOR!! ✈️</h2>           
+        </div>
+      `;
+    };

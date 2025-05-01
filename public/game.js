@@ -5,21 +5,6 @@ const buttonClickSound = new Audio('sounds/chalentacept.mp3');
 const correctSound = new Audio('sounds/correcto.mp3');
 const incorrectSound = new Audio('sounds/incorrecto.mp3');
 const backgroundMusic = new Audio('sounds/fondoJuego.mp3'); // Música de fondo 
-let username = '';
-
-if (typeof window !== 'undefined') {
-    // Intenta recuperar el nombre del localStorage
-    const storedUsername = localStorage.getItem('username');
-    if (storedUsername) {
-        username = storedUsername;
-        console.log(`Bienvenido de nuevo, ${username}!`);
-    } else {
-        // No pedir con prompt aquí si tienes input en el HTML
-        // Solo dejar la variable lista para ser seteada con el input
-        console.log('No hay usuario guardado todavía.');
-    }
-}
-
 
 backgroundMusic.loop = true; // Reproducir música en bucle
 backgroundMusic.volume = 0.5;
@@ -28,6 +13,7 @@ const toggleMusicButton = document.getElementById('toggleMusicButton');
 const musicControl = document.getElementById('musicControl'); // Contenedor del control de música
 
 // Variables de juego y estado
+let gameTimerInterval; // Intervalo del reloj
 let countries = [];
 let usedCountries = [];
 let currentQuestionIndex = 0; // Índice de la pregunta actual
@@ -35,7 +21,7 @@ let correct = 0; // Contador de respuestas correctas
 let incorrect = 0; // Contador de respuestas incorrectas
 let score = 0; // Puntaje total del juego
 let startTime;
-
+let username = '';
 
 // Elementos del DOM
 const questionText = document.getElementById('questionText');
@@ -65,11 +51,6 @@ function startGame() {
     username = usernameInput.value.trim();// trim para eliminar espacios en blanco
     if (!username) return alert('Ingresa tu nombre.');
 
-
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('username', username); // <- Guarda aquí
-    }
-
     // Reproduce la música al iniciar el juego, si no está silenciada
     if (!isMusicMuted) {
         backgroundMusic.play();
@@ -83,6 +64,16 @@ function startGame() {
     score = 0;
     usedCountries = [];
     startTime = Date.now();
+
+    const gameTimerElement = document.getElementById('gameTimer');
+    clearInterval(gameTimerInterval); // Por si estaba corriendo de antes
+    gameTimerElement.textContent = "⏱️ Tiempo: 0.00 s";
+
+    gameTimerInterval = setInterval(() => {
+        const elapsedSeconds = ((Date.now() - startTime) / 1000).toFixed(2);
+        gameTimerElement.textContent = `⏱️ Tiempo: ${elapsedSeconds} s`;
+    }, 100);
+
 
     // Limpia la interfaz
     optionsList.innerHTML = "";
@@ -328,6 +319,7 @@ function generateNumericOptions(correctAnswer) {
 
 
 function endGame() {
+    clearInterval(gameTimerInterval); // Detener el cronómetro 
     const totalTime = (Date.now() - startTime) / 1000; // Calcula el tiempo total jugado
     const avgTimePerQuestion = (totalTime / 10).toFixed(3); // Calcula el tiempo promedio por pregunta
 

@@ -1,3 +1,42 @@
+const express = require('express');
+const path = require('path');
+const gameRoutes = require('./gameRoutes');
+const { getRankingPage } = require('./rankingController');
+
+const app = express();
+
+// Configuración del motor de plantillas Pug
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views')); // Carpeta de vistas
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Rutas
+app.use('/api', gameRoutes);
+
+// Ruta principal
+app.get('/', (req, res) => {
+    res.render('index');
+});
+
+app.get('/ranking', getRankingPage);
+
+// Asignar el puerto de Railway dinámicamente
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+});
+
+module.exports = app;
+
+/*
+
+
+
 //app.js
 const express = require('express');
 const path = require('path');
@@ -37,11 +76,13 @@ if (require.main === module) {
     });
 }
 
-module.exports = app;
+module.exports = app;*/
 
-//module.exports = app;
-// Iniciar servidor
-//app.listen(PORT, () => console.log(`Servidor ejecutándose en http://localhost:${PORT}`));
+
+
+
+
+
 
 
 
