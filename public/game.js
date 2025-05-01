@@ -5,6 +5,21 @@ const buttonClickSound = new Audio('sounds/chalentacept.mp3');
 const correctSound = new Audio('sounds/correcto.mp3');
 const incorrectSound = new Audio('sounds/incorrecto.mp3');
 const backgroundMusic = new Audio('sounds/fondoJuego.mp3'); // Música de fondo 
+let username = '';
+
+if (typeof window !== 'undefined') {
+    // Intenta recuperar el nombre del localStorage
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+        username = storedUsername;
+        console.log(`Bienvenido de nuevo, ${username}!`);
+    } else {
+        // No pedir con prompt aquí si tienes input en el HTML
+        // Solo dejar la variable lista para ser seteada con el input
+        console.log('No hay usuario guardado todavía.');
+    }
+}
+
 
 backgroundMusic.loop = true; // Reproducir música en bucle
 backgroundMusic.volume = 0.5;
@@ -20,7 +35,7 @@ let correct = 0; // Contador de respuestas correctas
 let incorrect = 0; // Contador de respuestas incorrectas
 let score = 0; // Puntaje total del juego
 let startTime;
-let username = '';
+
 
 // Elementos del DOM
 const questionText = document.getElementById('questionText');
@@ -49,6 +64,11 @@ function startGame() {
 
     username = usernameInput.value.trim();// trim para eliminar espacios en blanco
     if (!username) return alert('Ingresa tu nombre.');
+
+
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('username', username); // <- Guarda aquí
+    }
 
     // Reproduce la música al iniciar el juego, si no está silenciada
     if (!isMusicMuted) {

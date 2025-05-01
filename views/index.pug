@@ -33,6 +33,9 @@ block content
 
       // Área del juego
       #gameArea.card-glass.p-4.mt-4.w-100.text-center(style="max-width: 600px; display: none;")
+        // Reloj en tiempo real
+        #gameTimer.text-end.text-muted.mb-2(style="font-weight: bold;")
+          | ⏱️ Tiempo: 0.00 s
         .progress.mb-3
           #progressBar.progress-bar.progress-bar-striped.progress-bar-animated(style="width: 0%")
         #questionText.fs-4.mb-3
