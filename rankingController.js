@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 const path = require('path');
 const rankingFilePath = path.join(__dirname, 'data', 'ranking.json');
@@ -5,28 +6,28 @@ const rankingFilePath = path.join(__dirname, 'data', 'ranking.json');
 // Detectar si estamos en producción
 const isProd = process.env.NODE_ENV === 'production';
 
-// Ranking en memoria (usado en producción)
+// Ranking en memoria (solo usado en producción)
 let rankings = [];
 
 if (!isProd) {
+    // En desarrollo: leer ranking desde archivo al iniciar
     try {
         const data = fs.readFileSync(rankingFilePath, 'utf8');
         rankings = JSON.parse(data || '[]');
     } catch (error) {
         console.error("Error leyendo el ranking al iniciar:", error.message);
+        rankings = [];
     }
 }
 
-// Guardar un nuevo puntaje
 const saveScore = async (username, score, correct, incorrect, totalTime, avgTimePerQuestion) => {
     try {
-        rankings.push({ player: username, score, correct, incorrect, totalTime, avgTimePerQuestion });
+        const nuevaEntrada = { player: username, score, correct, incorrect, totalTime, avgTimePerQuestion };
+        rankings.push(nuevaEntrada);
 
-        // Ordenar
+        // Ordenar: primero por score, luego por menor tiempo
         rankings.sort((a, b) => {
-            if (b.score !== a.score) {
-                return b.score - a.score;
-            }
+            if (b.score !== a.score) return b.score - a.score;
             return a.totalTime - b.totalTime;
         });
 
@@ -34,10 +35,19 @@ const saveScore = async (username, score, correct, incorrect, totalTime, avgTime
         rankings = rankings.slice(0, 20);
 
         if (!isProd) {
+            // En desarrollo: guardar en archivo
             await fs.promises.writeFile(rankingFilePath, JSON.stringify(rankings, null, 2), 'utf8');
         }
 
-        const index = rankings.findIndex(entry => entry.player === username);
+        // Buscar posición de esta entrada exacta
+        const index = rankings.findIndex(entry =>
+            entry.player === username &&
+            entry.score === score &&
+            entry.correct === correct &&
+            entry.incorrect === incorrect &&
+            entry.totalTime === totalTime
+        );
+
         const position = index !== -1 ? index + 1 : null;
 
         return {
@@ -47,9 +57,10 @@ const saveScore = async (username, score, correct, incorrect, totalTime, avgTime
         };
     } catch (error) {
         console.error("Error guardando el ranking:", error.message);
-        throw new Error(`Error al guardar el ranking: ${error.message}`);
+        throw new Error(`Error al guardar el ranking:  ${error.message}`);
     }
 };
+
 
 // Leer datos
 const readRankingData = async () => {
