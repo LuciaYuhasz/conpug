@@ -1,95 +1,80 @@
-
 const fs = require('fs');
 const path = require('path');
 const rankingFilePath = path.join(__dirname, 'data', 'ranking.json');
-
-// Detectar si estamos en producción
-const isProd = process.env.NODE_ENV === 'production';
-
-// Ranking en memoria (solo usado en producción)
+// ranking una sola vez en memoria
 let rankings = [];
-
-if (!isProd) {
-    // En desarrollo: leer ranking desde archivo al iniciar
-    try {
-        const data = fs.readFileSync(rankingFilePath, 'utf8');
-        rankings = JSON.parse(data || '[]');
-    } catch (error) {
-        console.error("Error leyendo el ranking al iniciar:", error.message);
-        rankings = [];
-    }
+try {
+    const data = fs.readFileSync(rankingFilePath, 'utf8');
+    rankings = JSON.parse(data || '[]');
+} catch (error) {
+    console.error("Error leyendo el ranking al iniciar:", error.message);
 }
 
+
+// Guardar un nuevo puntaje en el ranking
 const saveScore = async (username, score, correct, incorrect, totalTime, avgTimePerQuestion) => {
     try {
-        const nuevaEntrada = { player: username, score, correct, incorrect, totalTime, avgTimePerQuestion };
-        rankings.push(nuevaEntrada);
 
-        // Ordenar: primero por score, luego por menor tiempo
+        rankings.push({ player: username, score, correct, incorrect, totalTime, avgTimePerQuestion });
+
+        // Ordenar el ranking por puntaje y luego por tiempo total (menor tiempo mejor)
         rankings.sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return a.totalTime - b.totalTime;
+            if (b.score !== a.score) {
+                return b.score - a.score; // Primero se ordena por puntaje
+            }
+            return a.totalTime - b.totalTime; // Si hay empate, el que jugó en menos tiempo tiene mejor posición
         });
 
-        // Limitar a top 20
+        // Mantener solo los mejores 20 jugadores
         rankings = rankings.slice(0, 20);
+        console.log("Rankings antes de guardar:", rankings);
 
-        if (!isProd) {
-            // En desarrollo: guardar en archivo
-            await fs.promises.writeFile(rankingFilePath, JSON.stringify(rankings, null, 2), 'utf8');
-        }
+        await fs.promises.writeFile(rankingFilePath, JSON.stringify(rankings, null, 2), 'utf8');
+        console.log("Guardado exitosamente!");
 
-        // Buscar posición de esta entrada exacta
-        const index = rankings.findIndex(entry =>
-            entry.player === username &&
-            entry.score === score &&
-            entry.correct === correct &&
-            entry.incorrect === incorrect &&
-            entry.totalTime === totalTime
-        );
+        //const position = rankings.findIndex(entry => entry.player === username) + 1;
 
+        const index = rankings.findIndex(entry => entry.player === username);
         const position = index !== -1 ? index + 1 : null;
-
         return {
             message: "Puntaje guardado correctamente",
-            position,
+            position: position, // puede ser null
             included: position !== null
         };
+
+
+
     } catch (error) {
         console.error("Error guardando el ranking:", error.message);
         throw new Error(`Error al guardar el ranking:  ${error.message}`);
     }
 };
 
-
-// Leer datos
+// Leer el ranking (para el getRanking y getRankingPage)
 const readRankingData = async () => {
-    if (isProd) {
-        return rankings;
-    }
-
     try {
         const data = await fs.promises.readFile(rankingFilePath, 'utf8');
-        return JSON.parse(data || '[]');
+        const rankingData = JSON.parse(data || '[]');
+        return rankingData;
     } catch (error) {
         console.error("Error leyendo el ranking:", error.message);
         throw error;
     }
 };
 
-// Devolver ranking por API
+// Obtener ranking
 const getRanking = async (req, res) => {
     try {
-        const data = await readRankingData();
+        const rankings = await readRankingData();
 
-        if (!data || data.length === 0) {
+        if (!rankings || rankings.length === 0) {
             return res.status(404).json({ message: "⚠️ No hay datos de ranking disponibles." });
         }
 
-        res.json(data);
+        res.json(rankings);
     } catch (error) {
         console.error("Error al leer el ranking:", error.message);
-        res.status(500).json({ error: `Error al obtener el ranking: ${error.message}` });
+        res.status(500).json({ error: `Error al obtener el ranking:${error.message}` });
     }
 };
 

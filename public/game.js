@@ -319,6 +319,12 @@ function generateNumericOptions(correctAnswer) {
 
 
 function endGame() {
+    const apiBaseUrl = window.location.origin.includes('localhost') ? 'http://localhost:3000/api' : '/api';
+    const username = localStorage.getItem('username');
+    if (!username) {
+        alert("Error: No se encontró el nombre de usuario.");
+        return;
+    }
     clearInterval(gameTimerInterval); // Detener el cronómetro 
     const totalTime = (Date.now() - startTime) / 1000; // Calcula el tiempo total jugado
     const avgTimePerQuestion = (totalTime / 3).toFixed(3); // Calcula el tiempo promedio por pregunta
@@ -341,11 +347,13 @@ function endGame() {
         recordMessage = `✅ Tu puntaje fue <strong>${currentScore}</strong>. Tu récord actual es <strong>${previousHighScore}</strong>.`;
     }
 
-    fetch('/api/submit-score', {
+
+    fetch(`${apiBaseUrl}/submit-score`, { // 👈 Aquí usamos la URL correcta según el entorno
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, score, correct, incorrect, totalTime, avgTimePerQuestion })
     })
+
         .then(res => res.json())
         .then(data => {
             localStorage.removeItem('ranking');

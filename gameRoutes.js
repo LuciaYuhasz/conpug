@@ -3,7 +3,6 @@ const { saveScore, getRanking } = require('./rankingController');
 
 const router = express.Router();
 
-// Ruta para enviar puntaje al ranking
 router.post('/submit-score', async (req, res) => {
     console.log("Datos recibidos:", req.body);
     const { username, score, correct, incorrect, totalTime, avgTimePerQuestion } = req.body;
