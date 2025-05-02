@@ -1,31 +1,49 @@
-
 const express = require('express');
 const path = require('path');
+
+// ⛔ Estás en /api, debes subir un nivel para encontrar estos archivos:
 const gameRoutes = require('../gameRoutes');
 const { getRankingPage } = require('../rankingController');
 
 const app = express();
 
-// Configuración motor de plantillas Pug
+// ✅ Ajustar rutas a 'views' y 'public':
 app.set('view engine', 'pug');
-app.set('views', path.join(__dirname, '../views')); // Carpeta de vistas
+app.set('views', path.join(__dirname, '../views')); // estaba mal: '/views' busca dentro de /api/views
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/public', express.static(path.join(__dirname, '../public')));
 
-//app.use(express.static(path.join(__dirname, '../public')));
+// Archivos estáticos (como CSS, JS del cliente, etc.)
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Rutas API
+// Rutas API y frontend
 app.use('/api', gameRoutes);
 app.get('/ranking', getRankingPage);
 app.get('/', (req, res) => {
-    res.render('index');
+  res.render('index');
 });
 
-// Exportar la app para que Vercel la trate como una función serverless
+// Exportar la app para Vercel
 module.exports = app;
+
+// Ejecutar servidor localmente
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+  });
+}
+
+
+
+
+
+
+
+
+
 
 
 

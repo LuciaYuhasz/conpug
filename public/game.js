@@ -50,6 +50,7 @@ function startGame() {
 
     username = usernameInput.value.trim();// trim para eliminar espacios en blanco
     if (!username) return alert('Ingresa tu nombre.');
+    localStorage.setItem('username', username);
 
     // Reproduce la música al iniciar el juego, si no está silenciada
     if (!isMusicMuted) {
