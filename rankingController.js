@@ -14,14 +14,7 @@ try {
 // Guardar un nuevo puntaje en el ranking
 const saveScore = async (username, score, correct, incorrect, totalTime, avgTimePerQuestion) => {
     try {
-        // 🔹 Leer ranking cada vez que se ejecuta la función (esto soluciona el problema en Vercel)
-        let rankings = [];
-        try {
-            const data = fs.readFileSync(rankingFilePath, 'utf8');
-            rankings = JSON.parse(data || '[]');
-        } catch (error) {
-            console.error("Error leyendo el ranking antes de guardar:", error.message);
-        }
+        let rankings = await readRankingData();
 
         rankings.push({ player: username, score, correct, incorrect, totalTime, avgTimePerQuestion });
 
@@ -35,26 +28,20 @@ const saveScore = async (username, score, correct, incorrect, totalTime, avgTime
 
         // Mantener solo los mejores 20 jugadores
         rankings = rankings.slice(0, 20);
-        console.log("Rankings antes de guardar:", rankings);
 
         await fs.promises.writeFile(rankingFilePath, JSON.stringify(rankings, null, 2), 'utf8');
         console.log("Guardado exitosamente!");
-
-        //const position = rankings.findIndex(entry => entry.player === username) + 1;
 
         const index = rankings.findIndex(entry => entry.player === username);
         const position = index !== -1 ? index + 1 : null;
         return {
             message: "Puntaje guardado correctamente",
-            position: position, // puede ser null
+            position: position,
             included: position !== null
         };
-
-
-
     } catch (error) {
         console.error("Error guardando el ranking:", error.message);
-        throw new Error(`Error al guardar el ranking:  ${error.message}`);
+        throw new Error(`Error al guardar el ranking: ${error.message}`);
     }
 };
 
@@ -69,6 +56,7 @@ const readRankingData = async () => {
         throw error;
     }
 };
+
 
 // Obtener ranking
 const getRanking = async (req, res) => {
