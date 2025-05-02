@@ -14,6 +14,14 @@ try {
 // Guardar un nuevo puntaje en el ranking
 const saveScore = async (username, score, correct, incorrect, totalTime, avgTimePerQuestion) => {
     try {
+        // 🔹 Leer ranking cada vez que se ejecuta la función (esto soluciona el problema en Vercel)
+        let rankings = [];
+        try {
+            const data = fs.readFileSync(rankingFilePath, 'utf8');
+            rankings = JSON.parse(data || '[]');
+        } catch (error) {
+            console.error("Error leyendo el ranking antes de guardar:", error.message);
+        }
 
         rankings.push({ player: username, score, correct, incorrect, totalTime, avgTimePerQuestion });
 

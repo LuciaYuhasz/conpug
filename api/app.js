@@ -71,3 +71,5 @@ if (require.main === module) {
 ////     taskkill /PID 8076 /F
 
 //netlify
+// git commit -m "Adaptación para Vercel y correcciones en rutas"
+//git commit -m "Adaptación Vercel "
