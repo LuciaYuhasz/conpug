@@ -326,18 +326,15 @@ function endGame() {
         alert("Error: No se encontró el nombre de usuario.");
         return;
     }
-    clearInterval(gameTimerInterval); // Detener el cronómetro 
-    const totalTime = (Date.now() - startTime) / 1000; // Calcula el tiempo total jugado
-    const avgTimePerQuestion = (totalTime / 3).toFixed(3); // Calcula el tiempo promedio por pregunta
+    clearInterval(gameTimerInterval); // Detener el cronómetro
+    const totalTime = (Date.now() - startTime) / 1000; // Tiempo total jugado
+    const avgTimePerQuestion = (totalTime / 3).toFixed(3); // Tiempo promedio por pregunta
 
     // Verificar y actualizar récord
     const previousHighScore = localStorage.getItem(`highScore_${username}`);
     const currentScore = score;
 
-
-
     let recordMessage = "";
-
     if (previousHighScore !== null && currentScore > Number(previousHighScore)) {
         localStorage.setItem(`highScore_${username}`, currentScore);
         recordMessage = `🎉 <strong>¡Nuevo récord, ${username}!</strong> Tu nuevo puntaje es <strong>${currentScore}</strong>.`;
@@ -348,40 +345,52 @@ function endGame() {
         recordMessage = `✅ Tu puntaje fue <strong>${currentScore}</strong>. Tu récord actual es <strong>${previousHighScore}</strong>.`;
     }
 
-
-    fetch(`${apiBaseUrl}/submit-score`, { // 👈 Aquí usamos la URL correcta según el entorno
+    // Enviar puntaje al servidor
+    fetch(`${apiBaseUrl}/submit-score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, score, correct, incorrect, totalTime, avgTimePerQuestion })
     })
-
         .then(res => res.json())
         .then(data => {
-            localStorage.removeItem('ranking');
-            // Obtener los elementos del modal
+            // Actualizar ranking en localStorage
+            let ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+
+            // Agregar el nuevo puntaje
+            ranking.push({ player: username, score: currentScore });
+
+            // Ordenar ranking (de mayor a menor puntaje)
+            ranking.sort((a, b) => b.score - a.score);
+
+            // Limitar el ranking a los 10 primeros
+            ranking = ranking.slice(0, 10);
+
+            // Guardar ranking actualizado
+            localStorage.setItem('ranking', JSON.stringify(ranking));
+
+            // Mostrar resultados del juego en el modal
             const gameModal = document.getElementById('gameResultModal');
             const modalMessage = document.getElementById('modalMessage');
             const modalDetails = document.getElementById('modalDetails');
             const modalRanking = document.getElementById('modalRanking');
 
-            // Rellena el mensaje del modal con los resultados
             modalMessage.innerHTML = `<strong> Tu resultado :</strong>`;
             modalDetails.innerHTML = `
-                <p>Puntaje: <strong>${score}</strong></p>
-                <p>Correctas: <strong>${correct}</strong></p>
-                <p>Incorrectas: <strong>${incorrect}</strong></p>
-                <p>Tiempo total: <strong>${totalTime.toFixed(3)} segundos</strong></p>
-                <p>Tiempo promedio por pregunta: <strong>${avgTimePerQuestion} segundos</strong></p>
-                
-            `;
-            // Mensaje de ranking 
+            <p>Puntaje: <strong>${score}</strong></p>
+            <p>Correctas: <strong>${correct}</strong></p>
+            <p>Incorrectas: <strong>${incorrect}</strong></p>
+            <p>Tiempo total: <strong>${totalTime.toFixed(3)} segundos</strong></p>
+            <p>Tiempo promedio por pregunta: <strong>${avgTimePerQuestion} segundos</strong></p>
+        `;
+
+            // Mensaje de ranking
             if (data.position !== null) {
                 modalRanking.textContent = `🔥🔥¡LLEGASTE AL PUESTO ${data.position}, FELICITACIONES!!🔥🔥`;
             } else {
-                modalRanking.textContent = ` Todavía no estás en la cima, pero cada intento te acerca más 🔝`;
+                modalRanking.textContent = `Todavía no estás en la cima, pero cada intento te acerca más 🔝`;
             }
 
-            // Mostrar el modal
+            // Mostrar modal con los resultados
             gameModal.style.display = "flex";
 
             // Asignar evento al botón "Jugar de nuevo"
@@ -393,8 +402,9 @@ function endGame() {
         });
 }
 
+// Función para ver el ranking
 document.getElementById('viewRankingButton').onclick = () => {
-    window.location.href = "/ranking"; // Redirige a la nueva página de ranking
+    window.location.href = "/ranking"; // Redirige a la página de ranking
 };
 
 document.getElementById('viewRankingButtonFinal').onclick = () => {

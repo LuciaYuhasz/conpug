@@ -72,4 +72,4 @@ if (require.main === module) {
 
 //netlify
 // git commit -m "Adaptación para Vercel y correcciones en rutas"
-//git commit -m "Adaptación Vercel "
+//git commit -m "A Vercel "
