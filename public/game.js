@@ -345,7 +345,6 @@ function endGame() {
         recordMessage = `✅ Tu puntaje fue <strong>${currentScore}</strong>. Tu récord actual es <strong>${previousHighScore}</strong>.`;
     }
 
-    // Enviar puntaje al servidor
     fetch(`${apiBaseUrl}/submit-score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,28 +352,25 @@ function endGame() {
     })
         .then(res => res.json())
         .then(data => {
-            // Actualizar ranking en localStorage
-            let ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+            let ranking = JSON.parse(localStorage.getItem('ranking')) || []; // Aseguramos que el ranking no sea nulo
 
-            // Agregar el nuevo puntaje
+            // Añadimos el nuevo puntaje
             ranking.push({ player: username, score: currentScore });
 
-            // Ordenar ranking (de mayor a menor puntaje)
+            // Ordenamos el ranking por puntaje (de mayor a menor)
             ranking.sort((a, b) => b.score - a.score);
 
-            // Limitar el ranking a los 10 primeros
-            ranking = ranking.slice(0, 10);
-
-            // Guardar ranking actualizado
+            // Guardamos el ranking actualizado en localStorage
             localStorage.setItem('ranking', JSON.stringify(ranking));
 
-            // Mostrar resultados del juego en el modal
+            // Ahora mostramos los resultados en el modal, como ya lo estás haciendo en tu código
             const gameModal = document.getElementById('gameResultModal');
             const modalMessage = document.getElementById('modalMessage');
             const modalDetails = document.getElementById('modalDetails');
             const modalRanking = document.getElementById('modalRanking');
 
-            modalMessage.innerHTML = `<strong> Tu resultado :</strong>`;
+            // Aquí pones los resultados en el modal
+            modalMessage.innerHTML = `<strong>Tu resultado :</strong>`;
             modalDetails.innerHTML = `
             <p>Puntaje: <strong>${score}</strong></p>
             <p>Correctas: <strong>${correct}</strong></p>
@@ -383,14 +379,27 @@ function endGame() {
             <p>Tiempo promedio por pregunta: <strong>${avgTimePerQuestion} segundos</strong></p>
         `;
 
-            // Mensaje de ranking
+            // Mostrar mensaje de ranking en el modal
             if (data.position !== null) {
                 modalRanking.textContent = `🔥🔥¡LLEGASTE AL PUESTO ${data.position}, FELICITACIONES!!🔥🔥`;
             } else {
                 modalRanking.textContent = `Todavía no estás en la cima, pero cada intento te acerca más 🔝`;
             }
 
-            // Mostrar modal con los resultados
+            // Mostrar el ranking en el modal
+            if (ranking.length === 0) {
+                modalRanking.textContent = "Aún no hay puntajes guardados. ¡Haz tu primera jugada!";
+            } else {
+                modalRanking.innerHTML = `<strong>Ranking:</strong><ul>`;
+                ranking.forEach((entry, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${index + 1}. ${entry.player} - ${entry.score}`;
+                    modalRanking.appendChild(li);
+                });
+                modalRanking.innerHTML += `</ul>`;
+            }
+
+            // Mostrar el modal
             gameModal.style.display = "flex";
 
             // Asignar evento al botón "Jugar de nuevo"
@@ -401,6 +410,8 @@ function endGame() {
             alert("Ocurrió un error al guardar el puntaje.");
         });
 }
+
+
 
 // Función para ver el ranking
 document.getElementById('viewRankingButton').onclick = () => {
