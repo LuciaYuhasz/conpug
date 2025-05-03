@@ -1,17 +1,12 @@
+import { keypressSound, buttonClickSound, correctSound, incorrectSound, backgroundMusic, toggleMusic } from './sounds.js';
+import {
+    questionText, optionsList, registerForm, gameArea,
+    usernameInput, startGameButton, toggleMusicButton,
+    showFlagHintButton, hintContainer,
+    updateProgressBar, setupHintHandler, getCountryNameInSpanish
+} from './ui.js';
 
-// Definición de sonidos para efectos de juego
-const keypressSound = new Audio('sounds/tipeo.mp3');
-const buttonClickSound = new Audio('sounds/chalentacept.mp3');
-const correctSound = new Audio('sounds/correcto.mp3');
-const incorrectSound = new Audio('sounds/incorrecto.mp3');
-const backgroundMusic = new Audio('sounds/fondoJuego.mp3'); // Música de fondo 
-
-backgroundMusic.loop = true; // Reproducir música en bucle
-backgroundMusic.volume = 0.5;
-let isMusicMuted = false; // Estado de silenciamiento de la música
-const toggleMusicButton = document.getElementById('toggleMusicButton');
-const musicControl = document.getElementById('musicControl'); // Contenedor del control de música
-
+const musicControl = document.getElementById('musicControl'); // ✅ asegurate de tener esto arriba
 // Variables de juego y estado
 let gameTimerInterval; // Intervalo del reloj
 let countries = [];
@@ -22,14 +17,8 @@ let incorrect = 0; // Contador de respuestas incorrectas
 let score = 0; // Puntaje total del juego
 let startTime;
 let username = '';
+let isMusicMuted = false; // Valor por defecto
 
-// Elementos del DOM
-const questionText = document.getElementById('questionText');
-const optionsList = document.getElementById('optionsList');
-const registerForm = document.getElementById('registerForm');
-const gameArea = document.getElementById('gameArea');
-const startGameButton = document.getElementById('startGameButton');
-const usernameInput = document.getElementById('username');
 
 // Evento al escribir en el campo de nombre de usuario
 usernameInput.addEventListener('input', () => {
@@ -40,23 +29,18 @@ usernameInput.addEventListener('input', () => {
     keypressSound.play();
 });
 
-//FUNCION DE COMIENZO/REINICIO PARTIDO 
-function startGame() {
-    console.log("startGame() ejecutado");
 
-    buttonClickSound.pause();
+
+function startGame() {
+    //buttonClickSound.pause();
     buttonClickSound.currentTime = 0;
     buttonClickSound.play();
 
     username = usernameInput.value.trim();// trim para eliminar espacios en blanco
     if (!username) return alert('Ingresa tu nombre.');
-    localStorage.setItem('username', username);
+    musicControl.style.display = 'block';
 
-    // Reproduce la música al iniciar el juego, si no está silenciada
-    if (!isMusicMuted) {
-        backgroundMusic.play();
-        musicControl.style.display = 'block';
-    }
+    toggleMusic(isMusicMuted, toggleMusicButton);
 
     // Reinicia el juego
     currentQuestionIndex = 0;
@@ -110,25 +94,9 @@ startGameButton.addEventListener('click', startGame);
 document.getElementById('closeResultModalButton').addEventListener('click', startGame);
 
 
-
-// Evento para silenciar o reanudar la música de fondo
 toggleMusicButton.addEventListener('click', () => {
     isMusicMuted = !isMusicMuted;
-    if (isMusicMuted) {
-        backgroundMusic.pause();
-        toggleMusicButton.innerHTML = '<i class="bi bi-volume-mute"></i> Reanudar Música';
-        toggleMusicButton.classList.add('muted'); // Cambia el estilo
-
-        toggleMusicButton.style.backgroundColor = "#f44336";
-    } else {
-        backgroundMusic.play();
-        toggleMusicButton.innerHTML = '<i class="bi bi-volume-up"></i> Silenciar Música';
-        toggleMusicButton.classList.remove('muted'); // Vuelve al estilo original
-
-        toggleMusicButton.style.backgroundColor = "#4CAF50";
-        console.log("Clase muted eliminada:", toggleMusicButton.classList.contains('muted'))
-    }
-    localStorage.setItem('isMusicMuted', isMusicMuted);
+    toggleMusic(isMusicMuted, toggleMusicButton);  // Ahora usa la función toggleMusic
 });
 
 // FUNCION ASINCRONA PARA CARGAR PAISES EN LA API 
@@ -151,11 +119,6 @@ async function loadCountries() {
     }
 }
 
-// Función para actualizar la barra de progreso del juego
-function updateProgressBar() {
-    const progress = (currentQuestionIndex / 3) * 100;
-    document.getElementById("progressBar").style.width = `${progress}%`;// se  ajusta el ancho segun el valor de progrees, que representa el porsentaje 
-}
 
 
 // Función para generar y mostrar una pregunta aleatoria
@@ -256,17 +219,15 @@ function displayQuestion({ question, options, correctAnswer, type, flag }) {
 
             if (isCorrect) {
                 li.classList.add('correct-answer'); // Estilo para respuesta correcta
-                correctSound.pause();
-                correctSound.currentTime = 0;
-                correctSound.play(); // Reproducir sonido de respuesta correcta
+                correctSound.play();
+
                 score += type === 'flag' ? 5 : 3; // Aumentar puntaje según tipo de pregunta
                 correct++;
                 modalMessageQuestion.textContent = "✅ ¡Correcto!";
             } else {
                 li.classList.add('incorrect-answer'); // Estilo para respuesta incorrecta
-                incorrectSound.pause();
-                incorrectSound.currentTime = 0;
-                incorrectSound.play(); // Reproducir sonido de respuesta incorrecta
+                incorrectSound.play();
+
                 incorrect++;
                 modalMessageQuestion.textContent = `❌ Incorrecto. La respuesta era: ${correctAnswer}`;
             }
